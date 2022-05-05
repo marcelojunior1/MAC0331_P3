@@ -32,14 +32,26 @@ def Svp(l):
     for i in range(len(fila)):
         print(fila[i])
         segmento = None
+        lSeg = fila[i][SEGM]
+        fEsq = fila[i][ESQ]
 
         if fila[i][ESQ]:
-            segmento = Segment(origem, l[fila[i][SEGM]].init)
-        else:
-            segmento = Segment(origem, l[fila[i][SEGM]].to)
+            segmento = Segment(origem, l[lSeg].init)
 
-        segmento.hilight(color_line="blue")
-        time.sleep(2)
+        else:
+            segmento = Segment(origem, l[lSeg].to)
+
+        linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
+
+        if not fEsq:
+            l[lSeg].hilight("white")
+        else:
+            l[lSeg].hilight("red")
+
+        control.sleep()
+        control.plot_delete(linha)
+
+
 
 
 # ------------------------------------------------------------------------
@@ -56,12 +68,20 @@ def para_coordenadas_polares(l):
         x2 = p2.x
         y1 = p1.y
         y2 = p2.y
-        r_1 = (x2 - y1) ** 2
-        r_2 = (x2 - y2) ** 2
+        r1 = (x2 - y1) ** 2
+        r2 = (x2 - y2) ** 2
         theta_1 = math.atan(y1 / x1)
         theta_2 = math.atan(y2 / x2)
-        fila.append([i, True, r_1, theta_1])
-        fila.append([i, False, r_2, theta_2])
+
+        if theta_1 < theta_2 or (theta_1 == theta_2 and r1 < r2):
+            fila.append([i, False, r1, theta_1])
+            fila.append([i, True, r2, theta_2])
+        else:
+            if theta_1 > theta_2 or (theta_1 == theta_2 and r1 < r2):
+                fila.append([i, True, r1, theta_1])
+                fila.append([i, False, r2, theta_2])
+            else:
+                print("Empate!")
 
     return fila
 
@@ -80,7 +100,7 @@ def filter_segments(l):
 
 
 # -------------------------------------------------------------------
-# Ordena a fila pela coordenada X
+# Ordena a fila pelo valor do angulo
 
 def mergesort(p, r, fila, eixo):
     if p < (r - 1):
@@ -105,13 +125,7 @@ def intercala(p, q, r, fila, eixo):
 
     for k in range(p, r):
 
-        cond = (w[i][THETA] < w[j][THETA])
-
-        if w[i][SEGM] == w[j][SEGM] and w[i][THETA] == w[j][THETA]:
-            if w[i][RAIO] < w[j][RAIO]:
-                cond = True
-            else:
-                cond = False
+        cond = (w[i][THETA] <= w[j][THETA])
 
         if cond:
             fila[k] = w[i]
