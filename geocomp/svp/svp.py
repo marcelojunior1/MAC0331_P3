@@ -6,6 +6,7 @@ from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.common.point import *
 from geocomp.rn import RN
+import time
 
 import math
 
@@ -14,7 +15,7 @@ ESQ = 1
 RAIO = 2
 THETA = 3
 X = 1
-Y = 0
+Y = 2
 
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
@@ -27,7 +28,18 @@ def Svp(l):
     origem = Point(0, 0)
 
     for i in range(len(fila)):
-        print(fila[i])
+        print(fila[i][THETA])
+        """"
+        segmento = None
+
+        if fila[i][ESQ]:
+            segmento = Segment(origem, l[fila[i][SEGM]].init)
+        else:
+            segmento = Segment(origem, l[fila[i][SEGM]].to)
+
+        segmento.hilight(color_line="blue")
+        #time.sleep(3)
+        """
 
 # ------------------------------------------------------------------------
 #
@@ -49,6 +61,7 @@ def para_coordenadas_polares(l):
         theta_2 = math.atan(y2 / x2)
         fila.append([i, True, r_1, theta_1])
         fila.append([i, False, r_2, theta_2])
+
     return fila
 
 
@@ -74,6 +87,7 @@ def mergesort(p, r, fila, eixo):
 
         mergesort(p, q, fila, eixo)
         mergesort(q, r, fila, eixo)
+
         intercala(p, q, r, fila, eixo)
 
 
@@ -91,20 +105,10 @@ def intercala(p, q, r, fila, eixo):
     for k in range(p, r):
         cond = False
 
-        # Organizacao por X
-        if eixo == X:
-            p1 = fila[i]
-            p2 = fila[j]
+        p1 = w[i][THETA]
+        p2 = w[j][THETA]
 
-            cond = (p1[THETA] <= p2[THETA])
-
-            if p1[ESQ] == p2[ESQ]:
-                if not p1[ESQ]:
-                    cond = True
-                else:
-                    cond = False
-        else:
-            print("Implementar se necessario")
+        cond = (p1 <= p2)
 
         if cond:
             fila[k] = w[i]
