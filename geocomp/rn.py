@@ -85,6 +85,63 @@ class RN:
             return no
         return self.fmin(no.esq)
 
+    def max_min_no(self, chave):
+        predecessor = -1
+        sucessor = -1
+
+        no = self.get(self.raiz, chave)
+
+        if no is None:
+            print("Erro ao encontrar a chave! : ", chave)
+            return -1, -1
+
+        if no == self.raiz:
+            A = None
+            B = None
+            if no.esq is not None:
+                A = self.fmax(no.esq)
+            if no.dir is not None:
+                B = self.fmin(no.dir)
+            if A is not None:
+                predecessor = A.chave
+            if B is not None:
+                sucessor = B.chave
+
+            return sucessor, predecessor
+
+        # Encontra o sucessor
+        if no.dir is not None:
+            tmp = self.fmin(no.dir)
+            sucessor = tmp.chave
+        else:
+            pai = no.pai
+            filho = no
+            while pai is not None and (filho == pai.dir):
+                filho = pai
+
+                if pai.pai is not None:
+                    pai = pai.pai
+                else:
+                    break
+            sucessor = pai.chave
+
+        # Encontra o predecessor
+        if no.esq is not None:
+            tmp = self.fmax(no.esq)
+            predecessor = tmp.chave
+        else:
+            pai = no.pai
+            filho = no
+            while pai is not None and (filho == pai.esq):
+                filho = pai
+                if pai.pai is not None:
+                    pai = pai.pai
+                else:
+                    break
+            predecessor = pai.chave
+
+        return sucessor, predecessor
+
     # Insercao ---------------------------------------------------------------------------------
 
     def put_op(self, chave, item):

@@ -23,35 +23,60 @@ Y = 2
 
 def Svp(l):
     print()
-    filter_segments(l)
     fila = para_coordenadas_polares(l)
     mergesort(0, len(fila), fila, X)
+    arvore = RN()
 
     origem = Point(0, 0)
 
     for i in range(len(fila)):
         print(fila[i])
+        control.sleep()
         segmento = None
         lSeg = fila[i][SEGM]
         fEsq = fila[i][ESQ]
+        A = None
+        B = None
 
-        if fila[i][ESQ]:
+        if fEsq:
             segmento = Segment(origem, l[lSeg].init)
-
+            A, B = arvore.max_min_no(lSeg)
+            arvore.remove_op(lSeg)
         else:
             segmento = Segment(origem, l[lSeg].to)
+            arvore.put_op(lSeg, -1)
+            A, B = arvore.max_min_no(lSeg)
 
         linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
 
-        if not fEsq:
-            l[lSeg].hilight("white")
-        else:
+        if fEsq:
             l[lSeg].hilight("red")
+        else:
+            l[lSeg].hilight("white")
 
         control.sleep()
+
+        l[lSeg].hilight("purple")
+
+        if A != -1:
+            l[A].hilight("yellow")
+        if B != -1:
+            l[B].hilight("yellow")
+
+        control.sleep()
+
+        if A != -1:
+            l[A].hilight("white")
+        if B != -1:
+            l[B].hilight("white")
+
+
+        if fEsq:
+            l[lSeg].hilight("red")
+        else:
+            l[lSeg].hilight("white")
+
         control.plot_delete(linha)
-
-
 
 
 # ------------------------------------------------------------------------
@@ -73,30 +98,22 @@ def para_coordenadas_polares(l):
         theta_1 = math.atan(y1 / x1)
         theta_2 = math.atan(y2 / x2)
 
+        if i == 6:
+            print(l[i])
+            print(theta_1, theta_2)
+
         if theta_1 < theta_2 or (theta_1 == theta_2 and r1 < r2):
             fila.append([i, False, r1, theta_1])
             fila.append([i, True, r2, theta_2])
+            l[i] = Segment(l[i].to, l[i].init)
         else:
-            if theta_1 > theta_2 or (theta_1 == theta_2 and r1 < r2):
+            if theta_1 > theta_2 or (theta_1 == theta_2 and r1 > r2):
                 fila.append([i, True, r1, theta_1])
                 fila.append([i, False, r2, theta_2])
             else:
                 print("Empate!")
 
     return fila
-
-
-# ------------------------------------------------------------------------
-# Ajusta o segmento de forma que o  primeiro ponto
-# seja o de menor coordenada
-
-def filter_segments(l):
-    for i in range(len(l)):
-        if (l[i].init.x > l[i].to.x):
-            l[i].init, l[i].to = l[i].to, l[i].init
-        elif (l[i].init.x == l[i].to.x):
-            if (l[i].init.y > l[i].to.y):
-                l[i].init, l[i].to = l[i].to, l[i].init
 
 
 # -------------------------------------------------------------------
