@@ -17,8 +17,10 @@ THETA = 3
 X = 1
 Y = 2
 
+
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
+
 def Svp(l):
     print()
     filter_segments(l)
@@ -28,8 +30,7 @@ def Svp(l):
     origem = Point(0, 0)
 
     for i in range(len(fila)):
-        print(fila[i][THETA])
-        """"
+        print(fila[i])
         segmento = None
 
         if fila[i][ESQ]:
@@ -38,8 +39,8 @@ def Svp(l):
             segmento = Segment(origem, l[fila[i][SEGM]].to)
 
         segmento.hilight(color_line="blue")
-        #time.sleep(3)
-        """
+        time.sleep(2)
+
 
 # ------------------------------------------------------------------------
 #
@@ -103,12 +104,14 @@ def intercala(p, q, r, fila, eixo):
     j = r - p - 1
 
     for k in range(p, r):
-        cond = False
 
-        p1 = w[i][THETA]
-        p2 = w[j][THETA]
+        cond = (w[i][THETA] < w[j][THETA])
 
-        cond = (p1 <= p2)
+        if w[i][SEGM] == w[j][SEGM] and w[i][THETA] == w[j][THETA]:
+            if w[i][RAIO] < w[j][RAIO]:
+                cond = True
+            else:
+                cond = False
 
         if cond:
             fila[k] = w[i]
