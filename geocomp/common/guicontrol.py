@@ -8,20 +8,21 @@ gui = None
 from . import prim
 from . import control
 
-from geocomp.common.point   import Point
+from geocomp.common.point import Point
 from geocomp.common.polygon import Polygon
 from geocomp.common.segment import Segment
 from geocomp.common.disc import Disc
 
 
-def init_display (toolkit, master):
+def init_display(toolkit, master):
     "Inicializa o toolkit (Tk, GNOME,...) especificado"
     global gui
     gui = toolkit
-    gui.init_display (master)
-    control.set_gui (gui)
+    gui.init_display(master)
+    control.set_gui(gui)
 
-def hide_all ():
+
+def hide_all():
     """Impede que mudancas sejas desenhadas, e passa a ignorar ordens para dormir
 
     Como, em geral, um algoritmo leva mais tempo para desenhar
@@ -31,16 +32,18 @@ def hide_all ():
     Essa funcao, junto com unhide_all permite isso."""
     global skip
     skip = 1
-    control.set_skip (1)
+    control.set_skip(1)
 
-def unhide_all ():
+
+def unhide_all():
     """Permite que mudancas sejam desenhadas, e volta e aceitar ordens para dormir
 
     Veja hide_all"""
-    #globals ()['skip'] = 0
+    # globals ()['skip'] = 0
     global skip
     skip = 0
-    control.set_skip (0)
+    control.set_skip(0)
+
 
 def plot_input(input):
     """Configura o canvas para mostrar os pontos passados."""
@@ -118,22 +121,59 @@ def run_algorithm(alg, input):
 
     input_dup = input[:]
 
-    ret = alg (input_dup)
+    ret = alg(input_dup)
 
     if not show:
         unhide_all()
-        control.freeze_update ()
-        if hasattr (ret, 'hilight'):
-            ret.hilight ()
-        elif hasattr (ret, 'plot'):
-            ret.plot ()
-        control.thaw_update ()
+        control.freeze_update()
+        if hasattr(ret, 'hilight'):
+            ret.hilight()
+        elif hasattr(ret, 'plot'):
+            ret.plot()
+        control.thaw_update()
 
     extra_info = None
-    if hasattr (ret, 'extra_info'):
+    if hasattr(ret, 'extra_info'):
         extra_info = ret.extra_info
 
-    cont = prim.get_count ()
-    prim.reset_count ()
+    cont = prim.get_count()
+    prim.reset_count()
 
     return cont, extra_info
+
+def open_file(filename):
+
+    with open(filename) as file:
+        i = 0
+        vertices = []
+        data = []
+        expecting_polygon = False
+        for line in file:
+            i += 1
+            line = line.split()
+            if len(line) == 0 or line[0] == "#":
+                continue
+            if line[0] == "[":
+                expecting_polygon = True
+            elif line[0] == "]":
+                expecting_polygon = False
+                data.append(Polygon(vertices))
+                vertices = []
+            elif len(line) == 3:
+                data.append(Disc(float(line[0]), float(line[1]), float(line[2])))
+            elif len(line) == 4:
+                data.append(
+                    Segment(
+                        Point(float(line[0]), float(line[1])),
+                        Point(float(line[2]), float(line[3]))
+                    )
+                )
+            elif len(line) == 2:
+                if expecting_polygon:
+                    vertices.append(Point(float(line[0]), float(line[1])))
+                else:
+                    data.append(Point(float(line[0]), float(line[1])))
+            else:
+                raise ValueError(
+                    "Invalid input from file: {}: line: {}: {}".format(filename, i, line))
+        return data

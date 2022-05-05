@@ -69,6 +69,7 @@ def read(filename):
                     required patterns
 
     """
+
     with open(filename) as file:
         i = 0
         vertices = []
@@ -103,6 +104,7 @@ def read(filename):
                 raise ValueError(
                     "Invalid input from file: {}: line: {}: {}".format(filename, i, line))
         return data
+
 
 # if __name__ == '__main__':
 #     import sys
