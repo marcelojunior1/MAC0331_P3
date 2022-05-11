@@ -46,20 +46,17 @@ def Svp(l):
         fEsq = fila[i][ESQ]
         fTheta = fila[i][THETA]
         fRaio = fila[i][RAIO]
-
         A = None
         B = None
 
-        #print(lSeg, fRaio)
-
         if fEsq:
             segmento = Segment(origem, l[lSeg].init)
-            A, B = arvore.max_min_no(fRaio)
-            arvore.remove_op(fRaio)
+            #A, B = arvore.max_min_no(fRaio)
+            arvore.remove_op(fRaio, lSeg)
         else:
             segmento = Segment(origem, l[lSeg].to)
             arvore.put_op(fRaio, lSeg)
-            A, B = arvore.max_min_no(fRaio)
+            #A, B = arvore.max_min_no(fRaio)
 
         linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
 
@@ -70,6 +67,7 @@ def Svp(l):
 
         control.sleep()
 
+        """"
         l[lSeg].hilight("purple")
 
         if A != -1:
@@ -88,14 +86,20 @@ def Svp(l):
             l[lSeg].hilight("red")
         else:
             l[lSeg].hilight("white")
+        """
 
         control.plot_delete(linha)
 
         min = arvore.fmin_op()
 
-        if min != -1:
-            pts_visiveis.append(min)
-        #arvore.print_tree_op()
+        print("MIN: ", min)
+
+        for i in range(len(min)):
+            k = min[i]
+            if k != -1:
+                pts_visiveis.append(k)
+
+        arvore.print_tree_op()
 
         print("----------------------------")
 
@@ -120,8 +124,8 @@ def para_coordenadas_polares(l):
         x2 = p2.x
         y1 = p1.y
         y2 = p2.y
-        r1 = x1**2 + y1**2
-        r2 = x2**2 + y2**2
+        r1 = x1 ** 2 + y1 ** 2
+        r2 = x2 ** 2 + y2 ** 2
         theta_1 = math.atan2(y1, x1)
         theta_2 = math.atan2(y2, x2)
 
@@ -129,7 +133,6 @@ def para_coordenadas_polares(l):
             theta_1 = theta_1 * (-1) + math.pi
         if theta_2 < 0:
             theta_2 = theta_2 * (-1) + math.pi
-
 
         raio = r1 if r1 < r2 else r2
 
@@ -144,7 +147,7 @@ def para_coordenadas_polares(l):
             else:
                 fila.append([i, False, raio, theta_1])
                 fila.append([i, True, raio, theta_2])
-               # l[i] = Segment(l[i].to, l[i].init)
+                l[i] = Segment(l[i].to, l[i].init)
 
     return fila
 

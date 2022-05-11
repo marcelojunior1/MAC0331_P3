@@ -19,13 +19,14 @@ class RN:
     class No:
 
         def __init__(self, chave, cor, item):
-            self.item = item
+            self.item = []
             self.chave = chave
             self.cor = cor
             self.esq = None
             self.dir = None
             self.pai = None
             self.N = 0
+            self.item.append(item)
 
     # Rotinas auxiliares ------------------------------------------------------------------------
 
@@ -81,12 +82,12 @@ class RN:
     def fmin_op(self):
 
         if self.raiz is None:
-            return -1
+            return [-1]
 
         no = self.fmin(self.raiz)
 
         if no is None:
-            return -1
+            return [-1]
         else:
             return no.item
 
@@ -189,7 +190,7 @@ class RN:
                             achou = True
                         else:
                             if chave == p.chave:
-                                p.item = item
+                                p.item.append(item)
                                 return raiz_arv
 
         # Insere o no
@@ -345,13 +346,13 @@ class RN:
 
     # Remocao ----------------------------------------------------------------------------------
     
-    def remove_op(self, chave):
+    def remove_op(self, chave, item):
         # TESTE
         global CONTROLE
         if chave == 50:
             CONTROLE = True
 
-        self.raiz = self.remove(self.raiz, chave)
+        self.raiz = self.remove(self.raiz, chave, item)
 
     def checar(self, no: No):
         while no is not self.raiz:
@@ -549,18 +550,22 @@ class RN:
                 break
 
             print("Erro: Loop Chegou até o fiinal")
-            arvore.print_tree_op()
+            self.print_tree_op()
             print(no.chave)
             exit(9)
 
         self.raiz.cor = PRETO
         return self.raiz
 
-    def remove(self, raizArv: No, chave):
+    def remove(self, raizArv: No, chave, item):
         no = self.get(raizArv, chave)
 
         if no is None:
             return self.raiz
+
+        if len(no.item) > 1:
+            no.item.remove(item)
+            return raizArv
 
         filhoDir = False
 
@@ -622,13 +627,13 @@ class RN:
             maximo = self.fmax(no.esq)
             no.chave = maximo.chave
             no.item = maximo.item
-            aux = self.remove(no.esq, maximo.chave)
+            aux = self.remove(no.esq, maximo.chave, item)
         else:
             # Copia do min e remove
             minimo = self.fmin(no.dir)
             no.chave = minimo.chave
             no.item = minimo.item
-            aux = self.remove(no.dir, minimo.chave)
+            aux = self.remove(no.dir, minimo.chave, item)
 
         return self.raiz
 
@@ -683,58 +688,3 @@ class RN:
 
     def verificar_pai_op(self):
         self.verificar_pai(self.raiz)
-
-
-# TESTE
-
-if __name__ == '__main__':
-
-
-    for a in range(1, 1000):
-        arvore = RN()
-        numeros = []
-
-        numeros.clear()
-        for i in range(1, 100):
-            x = randint(0, 1000)
-            arvore.put_op(x)
-            print(x)
-            numeros.append(x)
-
-            if arvore.balanceada_op() is False:
-                print("Erro 1")
-                print(numeros)
-                exit()
-
-        arvore.print_tree_op()
-        tam = len(numeros)
-
-        for i in range(1, 100):
-            #print("Original")
-            #arvore.print_tree_op()
-
-            k = random.choices(numeros, k=1)
-
-            arvore.remove_op(k[0])
-
-            cond = arvore.balanceada_op()
-
-            if cond is not True:
-                print("Erro 2")
-                print("Resultado: ", cond)
-                print(numeros, k)
-                arvore.print_tree_op()
-                exit()
-
-            numeros.remove(k[0])
-            tam -=1
-
-            print("Removido: ", k)
-
-        arvore.print_tree_op()
-        print("K: ", a)
-        if tam != 0:
-            arvore.print_tree_op()
-            print("Erro tam", tam)
-            exit(9)
-        del arvore
