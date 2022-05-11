@@ -78,6 +78,18 @@ class RN:
         else:
             return self.fmax(no.dir)
 
+    def fmin_op(self):
+
+        if self.raiz is None:
+            return -1
+
+        no = self.fmin(self.raiz)
+
+        if no is None:
+            return -1
+        else:
+            return no.item
+
     def fmin(self, no: No):
         if no.esq is None:
             return no

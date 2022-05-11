@@ -31,8 +31,13 @@ def Svp(l):
 
     origem = Point(0, 0)
 
+    pts_visiveis = []
+
     for i in range(len(fila)):
         print(fila[i])
+
+    for i in range(len(l)):
+        print(i, l[i])
 
     for i in range(len(fila)):
         control.sleep()
@@ -45,12 +50,12 @@ def Svp(l):
         A = None
         B = None
 
-        print(lSeg, fRaio)
+        #print(lSeg, fRaio)
 
         if fEsq:
             segmento = Segment(origem, l[lSeg].init)
             A, B = arvore.max_min_no(fRaio)
-            # arvore.remove_op(fRaio)
+            arvore.remove_op(fRaio)
         else:
             segmento = Segment(origem, l[lSeg].to)
             arvore.put_op(fRaio, lSeg)
@@ -86,7 +91,16 @@ def Svp(l):
 
         control.plot_delete(linha)
 
-    arvore.print_tree_op()
+        min = arvore.fmin_op()
+
+        if min != -1:
+            pts_visiveis.append(min)
+        #arvore.print_tree_op()
+
+        print("----------------------------")
+
+        for i in range(len(pts_visiveis)):
+            l[pts_visiveis[i]].hilight("green")
 
 
 # ------------------------------------------------------------------------
@@ -108,8 +122,14 @@ def para_coordenadas_polares(l):
         y2 = p2.y
         r1 = x1**2 + y1**2
         r2 = x2**2 + y2**2
-        theta_1 = math.atan(y1 / x1)
-        theta_2 = math.atan(y2 / x2)
+        theta_1 = math.atan2(y1, x1)
+        theta_2 = math.atan2(y2, x2)
+
+        if theta_1 < 0:
+            theta_1 = theta_1 * (-1) + math.pi
+        if theta_2 < 0:
+            theta_2 = theta_2 * (-1) + math.pi
+
 
         raio = r1 if r1 < r2 else r2
 
@@ -122,7 +142,9 @@ def para_coordenadas_polares(l):
                 fila.append([i, True, raio, theta_1])
                 fila.append([i, False, raio, theta_2])
             else:
-                print("Empate!")
+                fila.append([i, False, raio, theta_1])
+                fila.append([i, True, raio, theta_2])
+               # l[i] = Segment(l[i].to, l[i].init)
 
     return fila
 
