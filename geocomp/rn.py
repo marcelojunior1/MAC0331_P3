@@ -19,15 +19,13 @@ class RN:
     class No:
 
         def __init__(self, chave, cor, item):
+            self.item = item
             self.chave = chave
             self.cor = cor
             self.esq = None
             self.dir = None
             self.pai = None
             self.N = 0
-            self.item = []
-            self.item.append(item)
-            self.indice_item = 0
 
     # Rotinas auxiliares ------------------------------------------------------------------------
 
@@ -93,7 +91,7 @@ class RN:
 
         if no is None:
             print("Erro ao encontrar a chave! : ", chave)
-            return -1, -1
+            return predecessor, sucessor
 
         if no == self.raiz:
             A = None
@@ -103,16 +101,18 @@ class RN:
             if no.dir is not None:
                 B = self.fmin(no.dir)
             if A is not None:
-                predecessor = A.chave
+                predecessor = A.item
+                # predecessor = A.chave
             if B is not None:
-                sucessor = B.chave
+                sucessor = B.item
+                #sucessor = B.chave
 
             return sucessor, predecessor
 
         # Encontra o sucessor
         if no.dir is not None:
             tmp = self.fmin(no.dir)
-            sucessor = tmp.chave
+            sucessor = tmp.item
         else:
             pai = no.pai
             filho = no
@@ -123,12 +123,12 @@ class RN:
                     pai = pai.pai
                 else:
                     break
-            sucessor = pai.chave
+            sucessor = pai.item
 
         # Encontra o predecessor
         if no.esq is not None:
             tmp = self.fmax(no.esq)
-            predecessor = tmp.chave
+            predecessor = tmp.item
         else:
             pai = no.pai
             filho = no
@@ -138,7 +138,7 @@ class RN:
                     pai = pai.pai
                 else:
                     break
-            predecessor = pai.chave
+            predecessor = pai.item
 
         return sucessor, predecessor
 
@@ -177,8 +177,7 @@ class RN:
                             achou = True
                         else:
                             if chave == p.chave:
-                                p.indice_item += 1
-                                p.item[p.indice_item] = item
+                                p.item = item
                                 return raiz_arv
 
         # Insere o no
