@@ -20,13 +20,21 @@ X = 1
 Y = 2
 
 
+# TODO: Remover a visibilidade dos pontos extremo;
+# TODO: Segmentos alinhados (revolver)
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
 def Svp(l):
     print()
+
+    # Garante a ordem dos pontos em cada segmento
+    filter_segments(l)
+    # Insere os eventos na fila
     fila = para_coordenadas_polares(l)
-    mergesort(0, len(fila), fila, X)
+    # Ordena os eventos
+    mergesort(0, len(fila), fila, l)
+    # Inicia a arvore de segmentos
     arvore = RN()
 
     origem = Point(0, 0)
@@ -51,12 +59,10 @@ def Svp(l):
 
         if fEsq:
             segmento = Segment(origem, l[lSeg].init)
-            #A, B = arvore.max_min_no(fRaio)
             arvore.remove_op(fRaio, lSeg)
         else:
             segmento = Segment(origem, l[lSeg].to)
             arvore.put_op(fRaio, lSeg)
-            #A, B = arvore.max_min_no(fRaio)
 
         linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
 
@@ -67,32 +73,14 @@ def Svp(l):
 
         control.sleep()
 
-        """"
-        l[lSeg].hilight("purple")
-
-        if A != -1:
-            l[A].hilight("yellow")
-        if B != -1:
-            l[B].hilight("yellow")
-
-        control.sleep()
-
-        if A != -1:
-            l[A].hilight("white")
-        if B != -1:
-            l[B].hilight("white")
-
         if fEsq:
             l[lSeg].hilight("red")
         else:
             l[lSeg].hilight("white")
-        """
 
         control.plot_delete(linha)
 
         min = arvore.fmin_op()
-
-        print("MIN: ", min)
 
         for i in range(len(min)):
             k = min[i]
@@ -110,8 +98,6 @@ def Svp(l):
 # ------------------------------------------------------------------------
 # Converte os pontos de uma lista de segmentos para coordenadas polares e os
 # organiza em uma lista de pontos.
-
-# TODO: Função alterada para raios iguais; Ponto é sempre a origem
 
 def para_coordenadas_polares(l):
     fila = []
@@ -153,19 +139,30 @@ def para_coordenadas_polares(l):
 
 
 # -------------------------------------------------------------------
+# Garante que o ponto de 'inicio' de um segmento é menor em X do que
+# o ponto 'final'.
+
+def filter_segments(l):
+    for i in range(len(l)):
+        if (l[i].init.x > l[i].to.x):
+            l[i].init, l[i].to = l[i].to, l[i].init
+        elif (l[i].init.x == l[i].to.x):
+            if (l[i].init.y > l[i].to.y):
+                l[i].init, l[i].to = l[i].to, l[i].init
+
+
+# -------------------------------------------------------------------
 # Ordena a fila pelo valor do angulo (em radianos)
 
-def mergesort(p, r, fila, eixo):
+def mergesort(p, r, fila, l):
     if p < (r - 1):
         q = math.floor((p + r) / 2)
 
-        mergesort(p, q, fila, eixo)
-        mergesort(q, r, fila, eixo)
+        mergesort(p, q, fila, l)
+        mergesort(q, r, fila, l)
+        intercala(p, q, r, fila, l)
 
-        intercala(p, q, r, fila, eixo)
-
-
-def intercala(p, q, r, fila, eixo):
+def intercala(p, q, r, fila, l):
     w = [None for i in range((r - p))]
 
     for i in range(p, q):
@@ -178,7 +175,39 @@ def intercala(p, q, r, fila, eixo):
 
     for k in range(p, r):
 
-        cond = (w[i][THETA] <= w[j][THETA])
+        theta_1 = w[i][THETA]
+        theta_2 = w[j][THETA]
+
+        cond = (theta_1 < theta_2)
+
+        if theta_1 == theta_2:
+            seg_1 = w[i][SEGM]
+            seg_2 = w[j][SEGM]
+            esq_1 = w[i][ESQ]
+            esq_2 = w[j][ESQ]
+            raio_1 = w[i][RAIO]
+            raio_2 = w[j][RAIO]
+
+            y1 = l[seg_1].init.y
+            y2 = l[seg_2].init.y
+
+            if esq_1 != esq_2:
+                if not esq_1:
+                    cond = True
+                else:
+                    cond = False
+            else:
+                if esq_1 and esq_2:
+                    if raio_1 > raio_2:
+                        cond = True
+                    else:
+                        cond = False
+
+                if not esq_1 and not esq_2:
+                    if raio_1 < raio_2:
+                        cond = True
+                    else:
+                        cond = False
 
         if cond:
             fila[k] = w[i]
