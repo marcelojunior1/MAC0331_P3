@@ -21,7 +21,7 @@ Y = 2
 
 
 # TODO: Remover a visibilidade dos pontos extremo;
-# TODO: Segmentos alinhados (revolver)
+# TODO: Segmentos alinhados na diagonal (revolver)
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
@@ -29,7 +29,7 @@ def Svp(l):
     print()
 
     # Garante a ordem dos pontos em cada segmento
-    filter_segments(l)
+    # filter_segments(l)
     # Insere os eventos na fila
     fila = para_coordenadas_polares(l)
     # Ordena os eventos
@@ -48,6 +48,8 @@ def Svp(l):
         print(i, l[i])
 
     for i in range(len(fila)):
+        print(fila[i][SEGM], "---------------")
+
         control.sleep()
         segmento = None
         lSeg = fila[i][SEGM]
@@ -80,16 +82,17 @@ def Svp(l):
 
         control.plot_delete(linha)
 
-        min = arvore.fmin_op()
+        if not (i > len(fila)-2 and not fEsq):
+            min = arvore.fmin_op()
 
-        for i in range(len(min)):
-            k = min[i]
-            if k != -1:
-                pts_visiveis.append(k)
+            for i in range(1):
+                k = min[i]
+                if k != -1:
+                    pts_visiveis.append(k)
 
         arvore.print_tree_op()
 
-        print("----------------------------")
+        # print("----------------------------")
 
         for i in range(len(pts_visiveis)):
             l[pts_visiveis[i]].hilight("green")
@@ -116,11 +119,24 @@ def para_coordenadas_polares(l):
         theta_2 = math.atan2(y2, x2)
 
         if theta_1 < 0:
-            theta_1 = theta_1 * (-1) + math.pi
+            theta_1 = math.pi + theta_1 + math.pi
         if theta_2 < 0:
-            theta_2 = theta_2 * (-1) + math.pi
+            theta_2 = math.pi + theta_2 + math.pi
 
         raio = r1 if r1 < r2 else r2
+
+        if abs(theta_1 - theta_2) > math.pi:
+            if theta_1 <= math.pi:
+                theta_1 += 2 * math.pi
+            else:
+                theta_2 += 2 * math.pi
+
+            fila.append([i, False, raio, theta_2])
+            fila.append([i, True, raio, theta_1])
+            #l[i] = Segment(l[i].to, l[i].init)
+
+            print(i, theta_1, theta_2, l[i])
+            continue
 
         if theta_1 < theta_2 or (theta_1 == theta_2 and r1 < r2):
             fila.append([i, False, raio, theta_1])
@@ -162,6 +178,7 @@ def mergesort(p, r, fila, l):
         mergesort(q, r, fila, l)
         intercala(p, q, r, fila, l)
 
+
 def intercala(p, q, r, fila, l):
     w = [None for i in range((r - p))]
 
@@ -181,15 +198,10 @@ def intercala(p, q, r, fila, l):
         cond = (theta_1 < theta_2)
 
         if theta_1 == theta_2:
-            seg_1 = w[i][SEGM]
-            seg_2 = w[j][SEGM]
             esq_1 = w[i][ESQ]
             esq_2 = w[j][ESQ]
             raio_1 = w[i][RAIO]
             raio_2 = w[j][RAIO]
-
-            y1 = l[seg_1].init.y
-            y2 = l[seg_2].init.y
 
             if esq_1 != esq_2:
                 if not esq_1:
