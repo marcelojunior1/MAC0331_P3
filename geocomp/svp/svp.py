@@ -20,24 +20,21 @@ X = 1
 Y = 2
 
 
-# TODO: Remover a visibilidade dos pontos extremo;
-# TODO: Segmentos alinhados na diagonal (revolver)
+
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
 def Svp(l):
     print()
-
+    origem = Point(1, 1)
     # Garante a ordem dos pontos em cada segmento
     # filter_segments(l)
     # Insere os eventos na fila
-    fila = para_coordenadas_polares(l)
+    fila = para_coordenadas_polares(l, origem)
     # Ordena os eventos
     mergesort(0, len(fila), fila, l)
     # Inicia a arvore de segmentos
     arvore = RN()
-
-    origem = Point(0, 0)
 
     pts_visiveis = []
 
@@ -90,7 +87,7 @@ def Svp(l):
                 if k != -1:
                     pts_visiveis.append(k)
 
-        arvore.print_tree_op()
+        #arvore.print_tree_op()
 
         # print("----------------------------")
 
@@ -102,7 +99,7 @@ def Svp(l):
 # Converte os pontos de uma lista de segmentos para coordenadas polares e os
 # organiza em uma lista de pontos.
 
-def para_coordenadas_polares(l):
+def para_coordenadas_polares(l, origem):
     fila = []
     tam_l = len(l)
 
@@ -111,12 +108,29 @@ def para_coordenadas_polares(l):
         p2 = l[i].to
         x1 = p1.x
         x2 = p2.x
+        xc = origem.x
+        yc = origem.y
         y1 = p1.y
         y2 = p2.y
-        r1 = x1 ** 2 + y1 ** 2
-        r2 = x2 ** 2 + y2 ** 2
-        theta_1 = math.atan2(y1, x1)
-        theta_2 = math.atan2(y2, x2)
+        r1 = (x1) ** 2 + (y1) ** 2
+        r2 = (x2) ** 2 + (y2) ** 2
+
+        xt1 = abs(x1 - xc)
+        yt1 = abs(y1 - yc)
+        xt2 = abs(x2 - xc)
+        yt2 = abs(y2 - yc)
+
+        if x1 < xc:
+            xt1 *= -1
+        if y1 < yc:
+            yt1 *= -1
+        if x2 < xc:
+            xt2 *= -1
+        if y2 < yc:
+            yt2 *= -1
+
+        theta_1 = math.atan2(yt1, xt1)
+        theta_2 = math.atan2(yt2, xt2)
 
         if theta_1 < 0:
             theta_1 = math.pi + theta_1 + math.pi
@@ -130,13 +144,6 @@ def para_coordenadas_polares(l):
                 theta_1 += 2 * math.pi
             else:
                 theta_2 += 2 * math.pi
-
-            fila.append([i, False, raio, theta_2])
-            fila.append([i, True, raio, theta_1])
-            #l[i] = Segment(l[i].to, l[i].init)
-
-            print(i, theta_1, theta_2, l[i])
-            continue
 
         if theta_1 < theta_2 or (theta_1 == theta_2 and r1 < r2):
             fila.append([i, False, raio, theta_1])
