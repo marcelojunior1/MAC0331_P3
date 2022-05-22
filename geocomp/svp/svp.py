@@ -15,13 +15,12 @@ X = 1
 Y = 2
 
 
-# TODO: Remover repetição de elementos em seg_visiveis
+# TODO: Remover repetição de elementos em seg_visiveis; Primeiro segmento visivel
 
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
 def Svp(l):
-    print()
     # Registra o ponto
     origem = l[0]
     del l[0]
@@ -31,20 +30,20 @@ def Svp(l):
     fila, seg_eixo, seg_eixo_info = para_coordenadas_polares(l, origem)
     mergesort(0, len(fila), fila, l)  # Ordena os eventos
 
-    print("Eixo:", seg_eixo)
-
     # Insere os segmentos do eixo
     for i in range(len(seg_eixo)):
         arvore.put_op(seg_eixo_info[i][0], seg_eixo[i])
+        l[seg_eixo[i]].hilight("white")
 
+    """"
     for i in range(len(fila)):
         print(fila[i])
 
     for i in range(len(l)):
         print(i, l[i])
+    """
 
     for i in range(len(fila)):
-        print(fila[i][SEGM], "---------------")
 
         control.sleep()
         lSeg = fila[i][SEGM]
@@ -63,17 +62,19 @@ def Svp(l):
 
         control.sleep()
 
-        if fEsq:
-            l[lSeg].hilight("red")
-        else:
-            l[lSeg].hilight("white")
+        if seg_eixo.count(lSeg) == 0:
+            if fEsq:
+                l[lSeg].hilight("red")
+            else:
+                l[lSeg].hilight("white")
+
+        control.sleep()
 
         control.plot_delete(linha)
 
         # Define o menor da arvore
         min = arvore.fmin_op()
         k = min[0]
-        print("MIN", min)
 
         if len(min) > 1:
             for i in range(1, len(min)):
@@ -81,15 +82,14 @@ def Svp(l):
                 theta_2 = math.atan2(l[min[i]].to.y - origem.y, l[min[i]].to.x - origem.x)
                 if theta_2 > theta_1:
                     k = min[i]
-
         if k != -1:
             seg_visiveis.append(k)
 
-        # arvore.print_tree_op()
-        # print(seg_visiveis)
-
         if fEsq or seg_eixo.count(lSeg) != 0:
             arvore.remove_op(fRaio, lSeg)
+            l[lSeg].hilight("red")
+
+        control.sleep()
 
         for i in range(len(seg_visiveis)):
             l[seg_visiveis[i]].hilight("green")
