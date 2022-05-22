@@ -32,14 +32,6 @@ def Svp(l):
         arvore.put_op(seg_eixo_info[i][0], seg_eixo[i])
         l[seg_eixo[i]].hilight("white")
 
-    """"
-    for i in range(len(fila)):
-        print(fila[i])
-
-    for i in range(len(l)):
-        print(i, l[i])
-    """
-
     for i in range(len(fila)):
 
         control.sleep()
