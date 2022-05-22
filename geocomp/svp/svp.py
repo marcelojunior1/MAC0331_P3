@@ -1,13 +1,8 @@
 #!/usr/bin/env python
 
-
 from geocomp.common.segment import Segment
-from geocomp.common import control
-from geocomp.common.guiprim import *
 from geocomp.common.point import *
 from geocomp.rn import RN
-import time
-
 import math
 
 # ------------------------------------------------------------------------
@@ -20,23 +15,27 @@ X = 1
 Y = 2
 
 
+# TODO: Remover repetição de elementos em seg_visiveis
 
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
 def Svp(l):
     print()
-    origem = Point(1, 1)
-    # Garante a ordem dos pontos em cada segmento
-    # filter_segments(l)
+    # Registra o ponto
+    origem = l[0]
+    del l[0]
+    seg_visiveis = []  # Lista de segmentos visiveis
+    arvore = RN()  # Inicia a arvore de segmentos
     # Insere os eventos na fila
-    fila = para_coordenadas_polares(l, origem)
-    # Ordena os eventos
-    mergesort(0, len(fila), fila, l)
-    # Inicia a arvore de segmentos
-    arvore = RN()
+    fila, seg_eixo, seg_eixo_info = para_coordenadas_polares(l, origem)
+    mergesort(0, len(fila), fila, l)  # Ordena os eventos
 
-    pts_visiveis = []
+    print("Eixo:", seg_eixo)
+
+    # Insere os segmentos do eixo
+    for i in range(len(seg_eixo)):
+        arvore.put_op(seg_eixo_info[i][0], seg_eixo[i])
 
     for i in range(len(fila)):
         print(fila[i])
@@ -48,27 +47,19 @@ def Svp(l):
         print(fila[i][SEGM], "---------------")
 
         control.sleep()
-        segmento = None
         lSeg = fila[i][SEGM]
         fEsq = fila[i][ESQ]
-        fTheta = fila[i][THETA]
         fRaio = fila[i][RAIO]
-        A = None
-        B = None
 
-        if fEsq:
-            segmento = Segment(origem, l[lSeg].init)
-            arvore.remove_op(fRaio, lSeg)
-        else:
-            segmento = Segment(origem, l[lSeg].to)
+        if not fEsq and seg_eixo.count(lSeg) == 0:
             arvore.put_op(fRaio, lSeg)
 
-        linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
-
+        # Linha de varredura
         if fEsq:
-            l[lSeg].hilight("red")
+            segmento = Segment(origem, l[lSeg].init)
         else:
-            l[lSeg].hilight("white")
+            segmento = Segment(origem, l[lSeg].to)
+        linha = control.plot_segment(segmento.init.x, segmento.init.y, segmento.to.x, segmento.to.y, "blue", 1)
 
         control.sleep()
 
@@ -79,20 +70,29 @@ def Svp(l):
 
         control.plot_delete(linha)
 
-        if not (i > len(fila)-2 and not fEsq):
-            min = arvore.fmin_op()
+        # Define o menor da arvore
+        min = arvore.fmin_op()
+        k = min[0]
+        print("MIN", min)
 
-            for i in range(1):
-                k = min[i]
-                if k != -1:
-                    pts_visiveis.append(k)
+        if len(min) > 1:
+            for i in range(1, len(min)):
+                theta_1 = math.atan2(l[k].to.y - origem.y, l[k].to.x - origem.x)
+                theta_2 = math.atan2(l[min[i]].to.y - origem.y, l[min[i]].to.x - origem.x)
+                if theta_2 > theta_1:
+                    k = min[i]
 
-        #arvore.print_tree_op()
+        if k != -1:
+            seg_visiveis.append(k)
 
-        # print("----------------------------")
+        # arvore.print_tree_op()
+        # print(seg_visiveis)
 
-        for i in range(len(pts_visiveis)):
-            l[pts_visiveis[i]].hilight("green")
+        if fEsq or seg_eixo.count(lSeg) != 0:
+            arvore.remove_op(fRaio, lSeg)
+
+        for i in range(len(seg_visiveis)):
+            l[seg_visiveis[i]].hilight("green")
 
 
 # ------------------------------------------------------------------------
@@ -102,18 +102,21 @@ def Svp(l):
 def para_coordenadas_polares(l, origem):
     fila = []
     tam_l = len(l)
+    seg_eixo = []
+    seg_eixo_info = []
 
     for i in range(tam_l):
         p1 = l[i].init
         p2 = l[i].to
-        x1 = p1.x
-        x2 = p2.x
         xc = origem.x
         yc = origem.y
+        x1 = p1.x
         y1 = p1.y
+        x2 = p2.x
         y2 = p2.y
-        r1 = (x1) ** 2 + (y1) ** 2
-        r2 = (x2) ** 2 + (y2) ** 2
+
+        r1 = (x1 - xc) ** 2 + (y1 - yc) ** 2
+        r2 = (x2 - xc) ** 2 + (y2 - yc) ** 2
 
         xt1 = abs(x1 - xc)
         yt1 = abs(y1 - yc)
@@ -139,7 +142,13 @@ def para_coordenadas_polares(l, origem):
 
         raio = r1 if r1 < r2 else r2
 
-        if abs(theta_1 - theta_2) > math.pi:
+        # Detecta se o segmento intersecta o eixo X
+        if abs(theta_1 - theta_2) > math.pi and not (theta_1 == 0 or theta_2 == 0):
+            seg_eixo.append(i)
+            seg_eixo_info.append([raio])
+
+        # Define se o ponto no eixo X e 0 ou 2PI
+        if abs(theta_1 - theta_2) > math.pi and (theta_1 == 0 or theta_2 == 0):
             if theta_1 <= math.pi:
                 theta_1 += 2 * math.pi
             else:
@@ -158,20 +167,7 @@ def para_coordenadas_polares(l, origem):
                 fila.append([i, True, raio, theta_2])
                 l[i] = Segment(l[i].to, l[i].init)
 
-    return fila
-
-
-# -------------------------------------------------------------------
-# Garante que o ponto de 'inicio' de um segmento é menor em X do que
-# o ponto 'final'.
-
-def filter_segments(l):
-    for i in range(len(l)):
-        if (l[i].init.x > l[i].to.x):
-            l[i].init, l[i].to = l[i].to, l[i].init
-        elif (l[i].init.x == l[i].to.x):
-            if (l[i].init.y > l[i].to.y):
-                l[i].init, l[i].to = l[i].to, l[i].init
+    return fila, seg_eixo, seg_eixo_info
 
 
 # -------------------------------------------------------------------
@@ -209,12 +205,21 @@ def intercala(p, q, r, fila, l):
             esq_2 = w[j][ESQ]
             raio_1 = w[i][RAIO]
             raio_2 = w[j][RAIO]
+            seg_1 = w[i][SEGM]
+            seg_2 = w[j][SEGM]
 
             if esq_1 != esq_2:
-                if not esq_1:
-                    cond = True
+                if seg_1 == seg_2:
+                    if not esq_1:
+                        cond = True
+                    else:
+                        cond = False
                 else:
-                    cond = False
+                    if raio_1 > raio_2:
+                        cond = True
+                    else:
+                        cond = False
+
             else:
                 if esq_1 and esq_2:
                     if raio_1 > raio_2:

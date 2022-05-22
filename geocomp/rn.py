@@ -155,6 +155,12 @@ class RN:
 
         return sucessor, predecessor
 
+    def arvore_vazia(self):
+        return self.raiz == None
+
+    def teste(self):
+        return self.raiz.item
+
     # Insercao ---------------------------------------------------------------------------------
 
     def put_op(self, chave, item):
