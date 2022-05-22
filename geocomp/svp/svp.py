@@ -14,9 +14,6 @@ THETA = 3
 X = 1
 Y = 2
 
-
-# TODO: Remover repetição de elementos em seg_visiveis; Primeiro segmento visivel
-
 # ------------------------------------------------------------------------
 # Inicio do algoritmo
 
